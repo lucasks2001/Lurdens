@@ -2,6 +2,18 @@
 
 CHANGELOG = [
     {
+        "version": "1.3.0",
+        "date": "22/10/2026",
+        "changes": [
+            "Novo: o Lurdens funciona no Windows 10/11, pelos controles de mídia do sistema.",
+            "Novo: o Lurdens funciona no macOS, pelo AppleScript do próprio Spotify.",
+            "Novo: executáveis prontos para Windows e macOS na página de Releases.",
+            "Novo: iniciar com o sistema, notificações e pastas de configuração em cada sistema.",
+            "Corrigido: o autoteste não falha mais quando a arte do easter egg não está presente.",
+            "No Linux nada muda: continua pelo MPRIS, com os mesmos recursos.",
+        ],
+    },
+    {
         "version": "1.2.0",
         "date": "22/10/2026",
         "changes": [
