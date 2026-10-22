@@ -1,13 +1,26 @@
 # Lurdens
 
-Player complementar para o **Spotify Desktop** no **Fedora KDE Plasma 6**.
-Mostra a capa, o título, o artista e o progresso da música atual numa janela
-compacta e vertical (≈ 420 × 720), e controla a reprodução do Spotify já
-instalado — sem conta, senha, OAuth ou streaming próprio.
+[![CI](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml)
+[![Executáveis](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml)
+
+Player complementar para o **Spotify Desktop** no **Linux (KDE Plasma 6)**,
+no **Windows 10/11** e no **macOS**. Mostra a capa, o título, o artista e o
+progresso da música atual numa janela compacta e vertical (≈ 420 × 720), e
+controla a reprodução do Spotify já instalado — sem conta, senha, OAuth ou
+streaming próprio.
+
+| Sistema | Como o Lurdens fala com o Spotify | Como instalar |
+|---|---|---|
+| Linux (Fedora KDE Plasma 6) | MPRIS pelo D-Bus de sessão | [`./install.sh`](#instalação) |
+| Windows 10/11 (x64) | controles de mídia do Windows (SMTC) | `Lurdens-<versão>-windows-x64.zip` em [Releases](https://github.com/lucasks2001/Lurdens/releases) |
+| macOS 11+ (Apple Silicon) | AppleScript do próprio Spotify | `Lurdens-<versão>-macos-arm64.zip` em [Releases](https://github.com/lucasks2001/Lurdens/releases) |
+
+A interface é a mesma nos três (Qt 6 / QML pelo PySide6). Veja
+[Windows e macOS](#windows-e-macos) para o que muda em cada sistema.
 
 ---
 
-## Requisitos
+## Requisitos (Linux)
 
 | Item | Observação |
 |---|---|
@@ -74,6 +87,62 @@ pelas versões antigas.
 ./uninstall.sh --purge    # remove também as configurações
 ```
 
+## Windows e macOS
+
+### Instalar
+
+1. Baixe o `.zip` do seu sistema na página
+   [Releases](https://github.com/lucasks2001/Lurdens/releases).
+2. **Windows**: extraia a pasta `Lurdens` onde preferir (ex.: `Documentos`) e
+   abra `Lurdens.exe`. **macOS**: extraia e arraste `Lurdens.app` para
+   **Aplicativos**.
+3. Abra o Spotify Desktop e toque uma música.
+
+Os executáveis ainda não têm assinatura digital. Na primeira abertura:
+
+- **Windows**: o SmartScreen avisa → *Mais informações* › *Executar assim mesmo*.
+- **macOS**: clique com o botão direito em `Lurdens.app` › *Abrir* (ou rode
+  `xattr -dr com.apple.quarantine /Applications/Lurdens.app`). Em seguida o
+  macOS pede permissão para o Lurdens **controlar o Spotify** — aceite. Se
+  negar sem querer: Ajustes do Sistema › Privacidade e Segurança ›
+  Automação › Lurdens › Spotify.
+
+### Executar a partir do código-fonte
+
+```bash
+python -m pip install -r requirements.txt   # PySide6 (+ PyWinRT no Windows)
+python -m lurdens
+```
+
+### O que muda em cada sistema
+
+| Recurso | Linux | Windows | macOS |
+|---|---|---|---|
+| Capa, título, artista, álbum, progresso | sim | sim | sim |
+| Tocar/pausar, anterior/próxima, busca | sim | sim | sim |
+| Volume | se o Spotify expuser | não — o SMTC não tem volume por app (use o Spotify ou o mixer) | sim |
+| Aleatório | sim | sim | sim |
+| Repetição | desligado → lista → faixa | desligado → lista → faixa | desligado ↔ lista (o AppleScript do Spotify não tem "repetir faixa") |
+| Notificações ao trocar de faixa | serviço do Plasma | Central de Ações (precisa do ícone na bandeja) | Central de Notificações (precisa do ícone na bandeja) |
+| Atalhos globais | kglobalaccel (KDE) | — (as teclas de mídia já controlam o Spotify) | — (idem) |
+| Iniciar com o sistema | XDG autostart | `HKCU\…\CurrentVersion\Run` | LaunchAgent |
+| Sempre no topo | dica do Qt / script do KWin | dica do Qt | dica do Qt |
+
+No Windows, o Spotify só publica a sessão de mídia depois que alguma música
+começa a tocar: se o Lurdens disser "Spotify fechado" com ele aberto, dê
+play uma vez.
+
+### Onde ficam os arquivos
+
+| | Windows | macOS |
+|---|---|---|
+| Configurações | `%APPDATA%\Lurdens\settings.json` | `~/Library/Application Support/Lurdens/settings.json` |
+| Histórico e tempo de uso | `%LOCALAPPDATA%\Lurdens\state\` | `~/Library/Application Support/Lurdens/state/` |
+| Capas (cache) | `%LOCALAPPDATA%\Lurdens\cache\` | `~/Library/Caches/Lurdens/` |
+
+Para desinstalar, apague a pasta (Windows) ou o app (macOS), desligue
+"Iniciar com o sistema" antes, se estiver ligado, e apague as pastas acima.
+
 ## Uso
 
 - **Janela**: abre compacta e vertical. Redimensione, maximize ou use tela
@@ -124,6 +193,16 @@ na hora o que mudou.
 - **Encerrar** (menu › *Sair*, Ctrl+Q, bandeja › *Sair*): fecha o programa.
 - O botão **fechar** encerra, a não ser que *Fechar para a bandeja* esteja ligado.
 - Abrir o Lurdens com ele já aberto apenas traz a janela existente para frente.
+
+## Novidades da 1.3
+
+- **Windows 10/11 e macOS**: o Lurdens passa a funcionar fora do Linux,
+  com executáveis prontos nas releases (veja [Windows e macOS](#windows-e-macos)).
+- Backends de reprodução por sistema (`lurdens/backends/`): MPRIS no Linux,
+  SMTC no Windows e AppleScript no macOS, todos sem conta nem login.
+- Pastas, inicialização automática, notificações e textos da interface
+  conforme o sistema.
+- CI no GitHub Actions com testes e autoteste da interface nos três sistemas.
 
 ## Novidades da 1.2
 
@@ -189,7 +268,7 @@ Arquivos locais do Lurdens:
   instalação do Spotify, sessão gráfica, versão, dicas de diagnóstico e botão
   *Copiar diagnóstico*.
 
-## Integração com o KDE e limites do Wayland
+## Integração com o KDE e limites do Wayland (Linux)
 
 | Recurso | X11 | Wayland |
 |---|---|---|
@@ -255,6 +334,18 @@ ao pausar, fundo normal após trocar de faixa e histórico sem duplicatas.
 python3 -m unittest discover -s tests -v
 ```
 
+A CI (GitHub Actions) roda os testes e o autoteste da interface no Linux,
+no Windows e no macOS em cada PR; as capturas ficam como artefatos da
+execução. O workflow **Executáveis** gera e testa os pacotes de Windows e
+macOS e os anexa à release em cada tag `v*`.
+
+- Backends (`tests/test_backends.py`, `test_smtc.py`, `test_applescript.py`):
+  base de leitura periódica, SMTC com sessão simulada e AppleScript com o
+  `osascript` simulado — rodam em qualquer sistema. `test_smtc_live.py`
+  confere o PyWinRT real (só no Windows).
+- Sistema (`tests/test_platform.py`): pastas, inicialização automática
+  (registro do Windows simulado, LaunchAgent do macOS) e detecção do Spotify.
+
 - Unidades: serialização D-Bus (ida e volta, alinhamento, big-endian),
   estado e interpolação da posição, URLs de capa, configurações (validação,
   arquivo corrompido), detecção RPM/Flatpak, script do KWin.
@@ -283,17 +374,23 @@ O mock também serve para ver a interface com dados sem o Spotify:
 
 ```
 lurdens/
+├── backends/         como cada sistema fala com o Spotify (1.3)
+│   ├── base.py       contrato PlayerBackend (comandos + PlayerState por callback)
+│   ├── polling.py    base de leitura periódica (Windows/macOS)
+│   ├── smtc.py       Windows: controles de mídia do sistema (PyWinRT)
+│   └── applescript.py macOS: dicionário AppleScript do Spotify (osascript)
+├── paths.py          pastas de configuração/estado/cache por sistema (1.3)
 ├── dbus/wire.py      cliente D-Bus mínimo (socket Unix, auth EXTERNAL, thread leitora)
-├── mpris.py          descoberta do Spotify, sinais, comandos — thread própria com fila
+├── mpris.py          Linux: descoberta do Spotify, sinais, comandos — thread própria com fila
 ├── state.py          PlayerState imutável, interpolação, normalizações
 ├── settings.py       configurações JSON persistentes
-├── launcher.py       detecção/abertura do Spotify (RPM, Flatpak, Snap)
+├── launcher.py       detecção/abertura do Spotify (RPM, Flatpak, Snap, Windows, macOS)
 ├── tracks.py         detector de novas reproduções + histórico (1.2)
 ├── easter.py         reconhecimento de Ludens/BMTH (1.2)
 ├── timers.py         temporizador para dormir e tempo de uso (1.2)
-├── notify.py         notificações do desktop + cache de capas (1.2)
+├── notify.py         notificações do freedesktop (Linux) + cache de capas (1.2)
 ├── shortcuts.py      atalhos globais via kglobalaccel (1.2)
-├── autostart.py      inicialização automática XDG (1.2)
+├── autostart.py      inicialização automática: XDG, registro do Windows, LaunchAgent (1.2/1.3)
 ├── changelog.py      conteúdo de "Novidades"
 ├── kwin.py           "sempre no topo" no Wayland via script do KWin
 ├── qt/controllers.py objetos expostos ao QML (player, app)
@@ -303,6 +400,8 @@ lurdens/
 ├── qml/              interface (Qt Quick) e componentes de nanquim
 └── resources/        ícones e capa alternativa
 packaging/lurdens.desktop.in
+packaging/lurdens.spec   empacotamento PyInstaller (Windows/macOS)
+.github/workflows/    CI (3 sistemas) e geração dos executáveis
 tools/make_icons.py   gera SVG/PNGs do ícone a partir de uma geometria
 tools/make_easter.py  gera a arte hachurada do easter egg a partir de Bring icon.png
 tools/diagnostico.sh
