@@ -5,11 +5,6 @@ Mostra a capa, o título, o artista e o progresso da música atual numa janela
 compacta e vertical (≈ 420 × 720), e controla a reprodução do Spotify já
 instalado — sem conta, senha, OAuth ou streaming próprio.
 
-A identidade visual vem das referências de **nanquim**: papel e tinta,
-contornos grossos, sombras hachuradas, hachura cruzada na barra de progresso,
-pontilhado e trama. O ícone recria a figura radial do “lurdens icon” (quatro
-lâminas angulosas com furos e a agulha vertical).
-
 ---
 
 ## Requisitos
