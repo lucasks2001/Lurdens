@@ -18,6 +18,7 @@ import time
 from dataclasses import replace
 from typing import Callable
 
+from .backends.base import PlayerBackend
 from .dbus.wire import Connection, DBusError, Message, ObjectPath, Variant
 from .state import (PlayerState, SPOTIFY_NAME, apply_player_properties,
                     is_spotify_bus_name, next_loop_status)
@@ -43,7 +44,10 @@ FALLBACK_NAME_RULE = ("type='signal',sender='org.freedesktop.DBus',"
                       "interface='org.freedesktop.DBus',member='NameOwnerChanged'")
 
 
-class MprisClient:
+class MprisClient(PlayerBackend):
+    kind = "mpris"
+    label = "MPRIS (D-Bus)"
+
     def __init__(self, on_state: Callable[[PlayerState], None], address: str | None = None,
                  reconnect_delay: float = 3.0, resync_interval: float = 5.0):
         self._on_state = on_state
