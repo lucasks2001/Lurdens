@@ -3,11 +3,9 @@
 [![CI](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml)
 [![Executáveis](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml)
 
-Player complementar para o **Spotify Desktop** no **Linux (KDE Plasma 6)**,
-no **Windows 10/11** e no **macOS**. Mostra a capa, o título, o artista e o
-progresso da música atual numa janela compacta e vertical (≈ 420 × 720), e
-controla a reprodução do Spotify já instalado — sem conta, senha, OAuth ou
-streaming próprio.
+Player complementar para o **Spotify Desktop**.
+
+**Linux (KDE Plasma 6)**, **Windows 10/11** e **macOS**.
 
 | Sistema | Como o Lurdens fala com o Spotify | Como instalar |
 |---|---|---|
