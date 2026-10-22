@@ -43,7 +43,7 @@ jobs:
         env:
           # O mock do Spotify usa dbus-python, que vem do Python do sistema.
           LURDENS_MOCK_PYTHON: /usr/bin/python3
-        run: python -m unittest discover -s tests -v
+        run: python tools/ci_unittest.py
 
       - name: Autoteste da interface
         run: python -m lurdens --selftest "$RUNNER_TEMP/capturas"
