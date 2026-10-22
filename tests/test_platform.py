@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from lurdens import autostart, paths  # noqa: E402
+from lurdens.launcher import detect_spotify  # noqa: E402
 
 XDG = ("XDG_CONFIG_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME")
 
@@ -145,6 +146,29 @@ class AutostartPlatformTests(unittest.TestCase):
         self.assertIn("CurrentVersion\\Run", autostart.location("windows"))
         self.assertTrue(autostart.location("macos").endswith(".plist"))
         self.assertTrue(autostart.location("linux").endswith("lurdens.desktop"))
+
+
+# ------------------------------------------------------------ abrir o Spotify
+class LauncherPlatformTests(unittest.TestCase):
+    def test_windows_installer_then_store(self):
+        with tempfile.TemporaryDirectory() as d:
+            roaming, local = Path(d) / "Roaming", Path(d) / "Local"
+            env = {"APPDATA": str(roaming), "LOCALAPPDATA": str(local)}
+            self.assertEqual(detect_spotify(Path(d), os_name="windows", env=env).kind, "none")
+            alias = local / "Microsoft" / "WindowsApps" / "Spotify.exe"
+            alias.parent.mkdir(parents=True)
+            alias.touch()
+            store = detect_spotify(Path(d), os_name="windows", env=env)
+            self.assertEqual((store.kind, store.command), ("store", (str(alias),)))
+            exe = roaming / "Spotify" / "Spotify.exe"
+            exe.parent.mkdir(parents=True)
+            exe.touch()
+            self.assertEqual(detect_spotify(Path(d), os_name="windows", env=env).kind, "windows")
+
+    def test_macos(self):
+        found = detect_spotify(Path("/Users/u"), os_name="macos", mac_finder=lambda h: "/Applications/Spotify.app")
+        self.assertEqual(found.command, ("open", "-a", "/Applications/Spotify.app"))
+        self.assertEqual(detect_spotify(Path("/Users/u"), os_name="macos", mac_finder=lambda h: "").kind, "none")
 
 
 if __name__ == "__main__":
