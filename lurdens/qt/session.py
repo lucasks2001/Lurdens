@@ -255,7 +255,7 @@ class SessionController(QObject):
         self.settingsChanged.emit()
 
     autostartEnabled = Property(bool, _get_autostart, _set_autostart, notify=settingsChanged)
-    autostartFile = Property(str, lambda self: str(autostart.autostart_dir() / autostart.FILE_NAME), constant=True)
+    autostartFile = Property(str, lambda self: autostart.location(), constant=True)
 
     # =========================================================== atalhos
     def _shortcut_list(self):
