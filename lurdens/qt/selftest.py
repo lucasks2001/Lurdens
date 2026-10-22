@@ -126,6 +126,11 @@ def run_selftest(app, window, player, appctl, settings, messages, outdir: str, s
         checks.append(("Temporizador ativo", session.sleepActive and 1700 < session.sleepRemaining <= 1800))
         session.cancelSleep()
 
+    # A arte do easter egg não fica no repositório (é gerada por tools/make_easter.py);
+    # sem ela o efeito fica desligado de propósito, então essas verificações não se aplicam.
+    if session is not None and not session.easterAvailable:
+        print("  -- easter egg: arte ausente, verificações puladas")
+    elif session is not None:
         ludens = demo_state(track_id="/demo/ludens", title="Ludens", artists=("Bring Me The Horizon",),
                             album="DEMONSTRAÇÃO do autoteste")
         shot("20-easter-ludens-escuro", 420, 720, ludens, wait=1800)
