@@ -80,7 +80,8 @@ Rectangle {
                 title: "Fonte"
                 description: app.fontIsJetBrains ? "JetBrains Mono"
                              : "JetBrains Mono não instalada — usando " + app.fontFamily
-                               + ". Instale com: sudo dnf install jetbrains-mono-fonts-all"
+                               + (app.osName === "linux" ? ". Instale com: sudo dnf install jetbrains-mono-fonts-all"
+                                                          : ". Baixe em jetbrains.com/lp/mono e instale a fonte.")
                 Text {
                     text: app.fontIsJetBrains ? "Aa 0123" : "Aa"
                     color: app.fontIsJetBrains ? Theme.ink : Theme.muted
@@ -135,7 +136,7 @@ Rectangle {
 
             SettingRow {
                 width: parent.width
-                title: "Iniciar com o KDE"
+                title: "Iniciar com o " + app.desktopName
                 description: "Abre o Lurdens na bandeja ao entrar na sessão. Nunca abre duas cópias."
                 InkSwitch { checked: session.autostartEnabled; onToggled: function(v) { session.autostartEnabled = v } }
             }
@@ -145,12 +146,15 @@ Rectangle {
             SettingRow {
                 width: parent.width
                 title: "Avisar quando a música mudar"
-                description: "Capa, título e artista pelas notificações do Plasma (respeita “Não perturbe”). "
+                description: (app.osName === "linux"
+                              ? "Capa, título e artista pelas notificações do Plasma (respeita “Não perturbe”). "
+                              : "Título e artista pelas notificações do " + app.desktopName
+                                + " (precisa do ícone na bandeja ligado; respeita o modo foco). ")
                              + "Não avisa ao abrir o app nem com a janela do Lurdens em foco."
                 InkSwitch { checked: session.notifyTracks; onToggled: function(v) { session.notifyTracks = v } }
             }
             InkTextButton {
-                text: "PREFERÊNCIAS DO KDE"
+                text: app.osName === "linux" ? "PREFERÊNCIAS DO KDE" : "AJUSTES DO SISTEMA"
                 icon: "open"
                 onClicked: session.openNotificationSettings()
             }
@@ -185,7 +189,7 @@ Rectangle {
                 spacing: 10
                 visible: session.shortcutsAvailable
                 InkTextButton { text: "RESTAURAR PADRÕES"; onClicked: session.resetShortcuts() }
-                InkTextButton { text: "ATALHOS DO KDE"; icon: "keyboard"; onClicked: session.openSystemShortcuts() }
+                InkTextButton { text: "ATALHOS DO KDE"; icon: "keyboard"; visible: app.osName === "linux"; onClicked: session.openSystemShortcuts() }
             }
 
             // ---------------------------------------------------- histórico
@@ -253,12 +257,13 @@ Rectangle {
                 topPadding: 6
                 Repeater {
                     model: [
-                        ["D-Bus", player.busAvailable ? "conectado" : "indisponível"],
+                        [app.osName === "linux" ? "D-Bus" : "Mídia do sistema", player.busAvailable ? "conectado" : "indisponível"],
                         ["Spotify", !player.busAvailable ? "—" : player.connected ? ("conectado · " + (player.status === "Playing" ? "tocando" : player.status === "Paused" ? "pausado" : "parado")) : "não está aberto"],
-                        ["Serviço MPRIS", player.busName || "—"],
+                        ["Backend", player.backendLabel],
+                        ["Sessão do Spotify", player.busName || "—"],
                         ["Instalação", player.spotifyLabel],
                         ["Recursos", player.connected ? ((player.canSeek ? "busca · " : "") + (player.hasVolume ? "volume · " : "") + (player.hasShuffle ? "aleatório · " : "") + (player.hasLoop ? "repetição" : "")).replace(/ · $/, "") || "básicos" : "—"],
-                        ["Sessão gráfica", app.platformName],
+                        ["Plataforma", app.desktopName + " · " + app.platformName],
                         ["Versão", "Lurdens " + app.version]
                     ]
                     delegate: Row {
@@ -285,11 +290,20 @@ Rectangle {
             Text {
                 width: parent.width
                 text: "<b>Diagnóstico</b><br>"
-                      + "• Spotify aberto mas não detectado: feche e abra o Spotify; confira com "
-                      + "<i>busctl --user list | grep mpris</i>.<br>"
-                      + "• Flatpak: o Spotify precisa da permissão padrão de nome MPRIS (já vem no pacote do Flathub).<br>"
+                      + (app.osName === "windows"
+                         ? "• Spotify aberto mas não detectado: toque uma música — o Windows só publica a sessão "
+                           + "de mídia do Spotify depois disso. Confira se ela aparece no painel de volume.<br>"
+                           + "• Volume desabilitado: o Windows não oferece controle de volume por aplicativo "
+                           + "nessa API; use o Spotify ou o mixer de volume.<br>"
+                         : app.osName === "macos"
+                         ? "• Spotify aberto mas não detectado: libere o Lurdens em Ajustes do Sistema › "
+                           + "Privacidade e Segurança › Automação › Spotify.<br>"
+                           + "• Repetição só liga/desliga: o AppleScript do Spotify não tem “repetir faixa”.<br>"
+                         : "• Spotify aberto mas não detectado: feche e abra o Spotify; confira com "
+                           + "<i>busctl --user list | grep mpris</i>.<br>"
+                           + "• Flatpak: o Spotify precisa da permissão padrão de nome MPRIS (já vem no pacote do Flathub).<br>"
+                           + "• Volume, aleatório ou repetição desabilitados: a versão do Spotify não os expõe via MPRIS.<br>")
                       + "• Capas não aparecem: verifique a conexão com i.scdn.co.<br>"
-                      + "• Volume, aleatório ou repetição desabilitados: a versão do Spotify não os expõe via MPRIS.<br>"
                       + "• Terminal: <i>lurdens --debug</i> mostra mensagens detalhadas."
                 textFormat: Text.StyledText
                 color: Theme.inkSoft

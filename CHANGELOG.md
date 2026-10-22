@@ -3,6 +3,19 @@
 O mesmo conteúdo aparece no app em **Novidades** (clique no selo de versão na barra superior).
 Fonte: `lurdens/changelog.py`.
 
+## 1.3.0 — 22/10/2026
+- Novo: suporte ao **Windows 10/11** pelos controles de mídia do sistema (SMTC, via PyWinRT).
+- Novo: suporte ao **macOS** pelo dicionário AppleScript do Spotify (osascript).
+- Novo: executáveis para Windows x64 e macOS (Apple Silicon) gerados pelo PyInstaller e anexados às releases.
+- Novo: backends de reprodução por sistema (`lurdens/backends/`) com uma base comum de leitura periódica.
+- Novo: pastas de configuração, estado e cache por sistema (`lurdens/paths.py`).
+- Novo: iniciar com o sistema no Windows (registro) e no macOS (LaunchAgent).
+- Novo: notificações pela bandeja no Windows e no macOS; textos da interface conforme o sistema.
+- Novo: CI no GitHub Actions com testes e autoteste da interface no Linux, Windows e macOS.
+- Corrigido: instância única no Windows (`os.getuid` não existe lá).
+- Corrigido: o autoteste não falha quando a arte do easter egg está ausente.
+- Linux: sem mudanças de comportamento.
+
 ## 1.2.0 — 22/10/2026
 - Novo: histórico da sessão (Ctrl+Y) com capa, música, artista, álbum e horário; persistência opcional.
 - Novo: temporizador para dormir (Ctrl+T): 15/30/45/60 min ou personalizado; envia Pause ao Spotify.

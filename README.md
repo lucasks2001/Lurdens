@@ -13,10 +13,6 @@ Player complementar para o **Spotify Desktop**.
 | Windows 10/11 (x64) | controles de mídia do Windows (SMTC) | `Lurdens-<versão>-windows-x64.zip` em [Releases](https://github.com/lucasks2001/Lurdens/releases) |
 | macOS 11+ (Apple Silicon) | AppleScript do próprio Spotify | `Lurdens-<versão>-macos-arm64.zip` em [Releases](https://github.com/lucasks2001/Lurdens/releases) |
 
-> **Em andamento:** o suporte a Windows e macOS chega na versão 1.3 (PRs #1–#7).
-> Até lá, a versão publicada (1.2.0) roda só no Linux e os `.zip` de Windows/macOS
-> ainda não estão nas Releases.
-
 A interface é a mesma nos três (Qt 6 / QML pelo PySide6). Veja
 [Windows e macOS](#windows-e-macos) para o que muda em cada sistema.
 

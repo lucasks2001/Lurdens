@@ -165,14 +165,14 @@ class LauncherTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             home = Path(d)
             which = {"spotify": "/usr/bin/spotify", "flatpak": "/usr/bin/flatpak"}.get
-            self.assertEqual(detect_spotify(home, which).kind, "rpm")
+            self.assertEqual(detect_spotify(home, which, os_name="linux").kind, "rpm")
             (home / ".local/share/flatpak/app/com.spotify.Client").mkdir(parents=True)
             only_flatpak = {"flatpak": "/usr/bin/flatpak",
-                            "spotify": str(home / ".local/share/flatpak/exports/bin/spotify")}.get
-            inst = detect_spotify(home, only_flatpak)
+                            "spotify": home.as_posix() + "/.local/share/flatpak/exports/bin/spotify"}.get
+            inst = detect_spotify(home, only_flatpak, os_name="linux")
             self.assertEqual(inst.kind, "flatpak")
             self.assertEqual(inst.command, ("flatpak", "run", "com.spotify.Client"))
-        self.assertEqual(detect_spotify(Path("/nonexistent"), lambda _n: None).kind, "none")
+        self.assertEqual(detect_spotify(Path("/nonexistent"), lambda _n: None, os_name="linux").kind, "none")
 
     def test_kwin_script(self):
         js = build_script(1234, True)

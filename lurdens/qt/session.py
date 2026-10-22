@@ -13,8 +13,10 @@ from pathlib import Path
 
 from PySide6.QtCore import Property, QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QSystemTrayIcon
 
-from .. import autostart
+from .. import autostart, paths
+from ..backends import current_os
 from ..easter import EasterWatcher
 from ..notify import Notifier
 from ..settings import SettingsStore
@@ -30,8 +32,7 @@ NOTIFY_DEBOUNCE_MS = 900
 
 
 def state_dir() -> Path:
-    base = os.environ.get("XDG_STATE_HOME") or os.path.join(Path.home(), ".local", "state")
-    return Path(base) / "lurdens"
+    return paths.state_dir()
 
 
 def _launch_detached(cmd: list[str]) -> bool:
@@ -41,6 +42,64 @@ def _launch_detached(cmd: list[str]) -> bool:
         return True
     except OSError:
         return False
+
+
+def _open_system_page(page: str) -> bool:
+    """Abre uma página das configurações do sistema ("notifications" ou "shortcuts")."""
+    os_name = current_os()
+    if os_name == "windows":
+        uri = {"notifications": "ms-settings:notifications"}.get(page)
+        if not uri:
+            return False
+        try:
+            os.startfile(uri)           # type: ignore[attr-defined]
+            return True
+        except OSError:
+            return False
+    if os_name == "macos":
+        uri = {"notifications": "x-apple.systempreferences:com.apple.preference.notifications",
+               "shortcuts": "x-apple.systempreferences:com.apple.preference.keyboard?Shortcuts"}.get(page)
+        return bool(uri) and _launch_detached(["open", uri])
+    kcm = {"notifications": "kcm_notifications", "shortcuts": "kcm_keys"}[page]
+    return _launch_detached(["systemsettings", kcm])
+
+
+class TrayNotifier(QObject):
+    """Notificações pelo ícone da bandeja, para sistemas sem o serviço do freedesktop.
+
+    No Windows viram notificações da Central de Ações; no macOS, da Central de
+    Notificações. Precisam do ícone da bandeja visível (Configurações ›
+    Ícone na bandeja do sistema). Mesma interface do Notifier do Linux.
+    """
+    _post = Signal(str, str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._icon: QSystemTrayIcon | None = None
+        self.last_error = ""
+        self.sent = 0
+        self._post.connect(self._deliver)
+
+    def attach(self, icon: QSystemTrayIcon | None) -> None:
+        self._icon = icon
+
+    def track(self, title: str, artist: str, album: str, art_url: str) -> None:
+        self._post.emit(title, artist + (f"\n{album}" if album else ""))
+
+    def message(self, summary: str, body: str = "") -> None:
+        self._post.emit(summary, body)
+
+    def stop(self) -> None:
+        self._icon = None
+
+    def _deliver(self, title: str, body: str) -> None:
+        icon = self._icon
+        if icon is None or not icon.isVisible() or not QSystemTrayIcon.supportsMessages():
+            self.last_error = "ícone da bandeja desligado: sem onde mostrar notificações"
+            return
+        icon.showMessage(title, body, icon.icon(), 5000)
+        self.sent += 1
+        self.last_error = ""
 
 
 class SessionController(QObject):
@@ -85,9 +144,19 @@ class SessionController(QObject):
         self._ticks = 0
 
         # integrações com o desktop (desligadas no autoteste)
-        self._notifier = Notifier(bus_address) if desktop else None
-        self._shortcuts = None
+        self.os_name = current_os()
+        linux = self.os_name == "linux"
+        self._notifier = None
         if desktop:
+            self._notifier = Notifier(bus_address) if linux else TrayNotifier(self)
+        self._shortcuts = None
+        self._shortcuts_note = "desativados no autoteste"
+        if not linux:
+            # kglobalaccel é do KDE. No Windows e no macOS as teclas de mídia do
+            # teclado já vão direto para o Spotify.
+            self._shortcuts_note = ("disponíveis só no KDE Plasma; as teclas de mídia do teclado "
+                                    "controlam o Spotify diretamente")
+        elif desktop:
             self._shortcut_pressed.connect(self.actionRequested)
             self._shortcut_state.connect(self.shortcutsChanged)
             self._shortcuts = GlobalShortcuts(self._shortcut_pressed.emit, self._shortcut_state.emit, bus_address)
@@ -143,6 +212,11 @@ class SessionController(QObject):
         self.notify.emit(msg)
         if self._notifier is not None:
             self._notifier.message("Lurdens", msg)
+
+    def attach_tray(self, icon) -> None:
+        """Liga as notificações à bandeja (Windows/macOS)."""
+        if isinstance(self._notifier, TrayNotifier):
+            self._notifier.attach(icon)
 
     def shutdown(self):
         self._tick.stop()
@@ -241,7 +315,7 @@ class SessionController(QObject):
 
     @Slot()
     def openNotificationSettings(self):
-        if not _launch_detached(["systemsettings", "kcm_notifications"]):
+        if not _open_system_page("notifications"):
             self.notify.emit("Não foi possível abrir as Configurações do Sistema")
 
     # ======================================================== autostart
@@ -256,7 +330,7 @@ class SessionController(QObject):
         self.settingsChanged.emit()
 
     autostartEnabled = Property(bool, _get_autostart, _set_autostart, notify=settingsChanged)
-    autostartFile = Property(str, lambda self: str(autostart.autostart_dir() / autostart.FILE_NAME), constant=True)
+    autostartFile = Property(str, lambda self: autostart.location(), constant=True)
 
     # =========================================================== atalhos
     def _shortcut_list(self):
@@ -272,7 +346,7 @@ class SessionController(QObject):
     shortcuts = Property("QVariantList", _shortcut_list, notify=shortcutsChanged)
     shortcutsAvailable = Property(bool, lambda self: bool(self._shortcuts and self._shortcuts.available),
                                   notify=shortcutsChanged)
-    shortcutsStatus = Property(str, lambda self: self._shortcuts.status if self._shortcuts else "desativados no autoteste",
+    shortcutsStatus = Property(str, lambda self: self._shortcuts.status if self._shortcuts else self._shortcuts_note,
                                notify=shortcutsChanged)
 
     @Slot(int, result=str)
@@ -297,7 +371,7 @@ class SessionController(QObject):
 
     @Slot()
     def openSystemShortcuts(self):
-        if not _launch_detached(["systemsettings", "kcm_keys"]):
+        if not _open_system_page("shortcuts"):
             self.notify.emit("Não foi possível abrir as Configurações do Sistema")
 
     # ======================================================== diagnóstico

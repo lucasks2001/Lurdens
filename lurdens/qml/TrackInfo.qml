@@ -12,15 +12,20 @@ Column {
     spacing: size === "small" ? 2 : 5
 
     readonly property bool showTrack: player.hasTrack
-    readonly property string emptyTitle: !player.busAvailable ? "Sem acesso ao D-Bus"
+    readonly property string emptyTitle: !player.busAvailable ? (app.osName === "linux" ? "Sem acesso ao D-Bus"
+                                                                 : "Sem acesso ao Spotify")
                                         : player.connected ? "Nada tocando"
                                         : player.launching ? "Abrindo o Spotify…"
                                         : player.spotifyInstalled ? "Spotify fechado" : "Spotify não encontrado"
-    readonly property string emptyText: !player.busAvailable ? "O barramento de sessão não respondeu. Veja Configurações › Sistema."
+    readonly property string emptyText: !player.busAvailable ? (app.osName === "linux"
+                                                                ? "O barramento de sessão não respondeu. Veja Configurações › Sistema."
+                                                                : (player.lastError || "O serviço de mídia do sistema não respondeu.")
+                                                                  + " Veja Configurações › Sistema.")
                                        : player.connected ? "Escolha uma música no Spotify para começar."
                                        : player.launching ? "A música aparece aqui assim que ele estiver pronto."
                                        : player.spotifyInstalled ? "Abra o Spotify para ver e controlar o que está tocando."
-                                       : "Instale o Spotify (RPM ou Flatpak) para usar o Lurdens."
+                                       : app.osName === "linux" ? "Instale o Spotify (RPM ou Flatpak) para usar o Lurdens."
+                                       : "Instale o Spotify Desktop para usar o Lurdens."
 
     MarqueeText {
         width: info.width

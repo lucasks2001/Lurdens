@@ -12,10 +12,20 @@ from PySide6.QtGui import QGuiApplication, QPalette
 
 from .. import __version__
 from ..changelog import CHANGELOG
+from ..backends import create_backend, current_os
 from ..launcher import detect_spotify, launch
-from ..mpris import MprisClient
 from ..settings import SettingsStore
 from ..state import PlayerState, format_time
+
+
+def _system_description() -> str:
+    os_name = current_os()
+    if os_name == "windows":
+        return f"Windows {platform.release()} ({platform.version()})"
+    if os_name == "macos":
+        return f"macOS {platform.mac_ver()[0] or '?'} ({platform.machine()})"
+    return (f"{os.environ.get('XDG_SESSION_TYPE', '?')} / {os.environ.get('XDG_CURRENT_DESKTOP', '?')}"
+            f" ({platform.machine()})")
 
 
 class PlayerController(QObject):
@@ -28,7 +38,7 @@ class PlayerController(QObject):
         self._install = detect_spotify()
         self._launch_pending_until = 0.0
         self._incoming.connect(self._apply, Qt.ConnectionType.QueuedConnection)
-        self._client = MprisClient(self._incoming.emit, address=address)
+        self._client = create_backend(self._incoming.emit, address=address)
         # O volume chega em rajadas durante o arraste; agrupa em ~12 envios/s.
         self._volume_target: float | None = None
         self._volume_timer = QTimer(self, interval=80, singleShot=True)
@@ -84,6 +94,8 @@ class PlayerController(QObject):
     spotifyLabel = Property(str, lambda self: self._install.label, notify=changed)
     lastError = Property(str, lambda self: self._client.last_error, notify=changed)
     launching = Property(bool, lambda self: time.monotonic() < self._launch_pending_until, notify=changed)
+    backendKind = Property(str, lambda self: self._client.kind, constant=True)
+    backendLabel = Property(str, lambda self: self._client.label, constant=True)
     del _s
 
     # ---------------------------------------------------------------- comandos
@@ -221,6 +233,10 @@ class AppController(QObject):
     dark = Property(bool, lambda self: self._settings.get("theme") == "dark"
                     or (self._settings.get("theme") == "auto" and self._system_dark()), notify=changed)
     version = Property(str, lambda self: __version__, constant=True)
+    osName = Property(str, lambda self: current_os(), constant=True)
+    # Como o sistema se chama nos textos ("Iniciar com o KDE", "Iniciar com o Windows"…)
+    desktopName = Property(str, lambda self: {"windows": "Windows", "macos": "macOS"}.get(current_os(), "KDE"),
+                           constant=True)
     platformName = Property(str, lambda self: QGuiApplication.platformName(), constant=True)
     isWayland = Property(bool, lambda self: QGuiApplication.platformName().startswith("wayland"), constant=True)
     configPath = Property(str, lambda self: str(self._settings.path), constant=True)
@@ -277,9 +293,10 @@ class AppController(QObject):
             f"Python {platform.python_version()} ({sys.executable})",
             qt,
             f"Plataforma Qt: {QGuiApplication.platformName()}",
-            f"Sessão: {os.environ.get('XDG_SESSION_TYPE', '?')} / {os.environ.get('XDG_CURRENT_DESKTOP', '?')}",
-            f"D-Bus de sessão: {'ok' if st.bus_available else 'indisponível'}",
-            f"Spotify no D-Bus: {st.bus_name or 'não encontrado'}",
+            f"Sistema: {_system_description()}",
+            f"Backend: {self._player._client.label}",
+            f"Serviço de mídia: {'ok' if st.bus_available else 'indisponível'}",
+            f"Spotify: {(st.bus_name or 'conectado') if st.connected else 'não encontrado'}",
             f"Estado: {st.status or '-'} | faixa: {st.title or '-'}",
             f"Recursos: seek={st.can_seek} volume={st.volume is not None} "
             f"aleatório={st.shuffle is not None} repetição={st.loop_status is not None}",
@@ -289,11 +306,13 @@ class AppController(QObject):
             f"Cache de capas: {QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)}",
         ]
         if self._player._client.last_error:
-            lines.append(f"Último erro D-Bus: {self._player._client.last_error}")
+            lines.append(f"Último erro do backend: {self._player._client.last_error}")
         if self._keep_above_msg:
             lines.append(f"Sempre no topo: {self._keep_above_msg}")
+        hint = ("sudo dnf install jetbrains-mono-fonts-all" if current_os() == "linux"
+                else "baixe em jetbrains.com/lp/mono e instale")
         lines.append(f"Fonte: {self.font_family}" + ("" if self.font_is_preferred
-                     else " (JetBrains Mono não instalada: sudo dnf install jetbrains-mono-fonts-all)"))
+                     else f" (JetBrains Mono não instalada: {hint})"))
         try:
             lines.extend(self.extra_diagnostics())
         except Exception as exc:  # diagnóstico nunca falha
