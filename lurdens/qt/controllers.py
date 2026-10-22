@@ -18,6 +18,16 @@ from ..settings import SettingsStore
 from ..state import PlayerState, format_time
 
 
+def _system_description() -> str:
+    os_name = current_os()
+    if os_name == "windows":
+        return f"Windows {platform.release()} ({platform.version()})"
+    if os_name == "macos":
+        return f"macOS {platform.mac_ver()[0] or '?'} ({platform.machine()})"
+    return (f"{os.environ.get('XDG_SESSION_TYPE', '?')} / {os.environ.get('XDG_CURRENT_DESKTOP', '?')}"
+            f" ({platform.machine()})")
+
+
 class PlayerController(QObject):
     changed = Signal()
     _incoming = Signal(object)
@@ -224,6 +234,9 @@ class AppController(QObject):
                     or (self._settings.get("theme") == "auto" and self._system_dark()), notify=changed)
     version = Property(str, lambda self: __version__, constant=True)
     osName = Property(str, lambda self: current_os(), constant=True)
+    # Como o sistema se chama nos textos ("Iniciar com o KDE", "Iniciar com o Windows"…)
+    desktopName = Property(str, lambda self: {"windows": "Windows", "macos": "macOS"}.get(current_os(), "KDE"),
+                           constant=True)
     platformName = Property(str, lambda self: QGuiApplication.platformName(), constant=True)
     isWayland = Property(bool, lambda self: QGuiApplication.platformName().startswith("wayland"), constant=True)
     configPath = Property(str, lambda self: str(self._settings.path), constant=True)
@@ -280,7 +293,7 @@ class AppController(QObject):
             f"Python {platform.python_version()} ({sys.executable})",
             qt,
             f"Plataforma Qt: {QGuiApplication.platformName()}",
-            f"Sessão: {os.environ.get('XDG_SESSION_TYPE', '?')} / {os.environ.get('XDG_CURRENT_DESKTOP', '?')}",
+            f"Sistema: {_system_description()}",
             f"Backend: {self._player._client.label}",
             f"Serviço de mídia: {'ok' if st.bus_available else 'indisponível'}",
             f"Spotify: {(st.bus_name or 'conectado') if st.connected else 'não encontrado'}",
@@ -296,8 +309,10 @@ class AppController(QObject):
             lines.append(f"Último erro do backend: {self._player._client.last_error}")
         if self._keep_above_msg:
             lines.append(f"Sempre no topo: {self._keep_above_msg}")
+        hint = ("sudo dnf install jetbrains-mono-fonts-all" if current_os() == "linux"
+                else "baixe em jetbrains.com/lp/mono e instale")
         lines.append(f"Fonte: {self.font_family}" + ("" if self.font_is_preferred
-                     else " (JetBrains Mono não instalada: sudo dnf install jetbrains-mono-fonts-all)"))
+                     else f" (JetBrains Mono não instalada: {hint})"))
         try:
             lines.extend(self.extra_diagnostics())
         except Exception as exc:  # diagnóstico nunca falha
