@@ -87,3 +87,34 @@ jobs:
           path: ${{ runner.temp }}/capturas
           if-no-files-found: ignore
           retention-days: 7
+
+  macos:
+    name: macOS — testes e autoteste
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: PySide6
+        run: python -m pip install -r requirements.txt
+
+      - name: Testes automatizados
+        run: python tools/ci_unittest.py
+
+      - name: Autoteste da interface
+        run: python -m lurdens --selftest "$RUNNER_TEMP/capturas"
+
+      - name: Capturas do autoteste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-macos
+          path: ${{ runner.temp }}/capturas
+          if-no-files-found: ignore
+          retention-days: 7
