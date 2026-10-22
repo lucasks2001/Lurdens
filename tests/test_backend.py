@@ -168,7 +168,7 @@ class LauncherTests(unittest.TestCase):
             self.assertEqual(detect_spotify(home, which).kind, "rpm")
             (home / ".local/share/flatpak/app/com.spotify.Client").mkdir(parents=True)
             only_flatpak = {"flatpak": "/usr/bin/flatpak",
-                            "spotify": str(home / ".local/share/flatpak/exports/bin/spotify")}.get
+                            "spotify": home.as_posix() + "/.local/share/flatpak/exports/bin/spotify"}.get
             inst = detect_spotify(home, only_flatpak)
             self.assertEqual(inst.kind, "flatpak")
             self.assertEqual(inst.command, ("flatpak", "run", "com.spotify.Client"))
