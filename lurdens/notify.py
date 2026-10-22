@@ -18,6 +18,7 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+from . import paths
 from .dbus.wire import Connection, DBusError
 
 log = logging.getLogger("lurdens.notify")
@@ -26,8 +27,7 @@ NOTIFY = ("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "or
 
 
 def cache_dir() -> Path:
-    base = os.environ.get("XDG_CACHE_HOME") or os.path.join(Path.home(), ".cache")
-    return Path(base) / "lurdens" / "covers"
+    return paths.cache_dir() / "covers"
 
 
 class CoverCache:

@@ -14,7 +14,7 @@ from pathlib import Path
 from PySide6.QtCore import Property, QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QKeySequence
 
-from .. import autostart
+from .. import autostart, paths
 from ..easter import EasterWatcher
 from ..notify import Notifier
 from ..settings import SettingsStore
@@ -30,8 +30,7 @@ NOTIFY_DEBOUNCE_MS = 900
 
 
 def state_dir() -> Path:
-    base = os.environ.get("XDG_STATE_HOME") or os.path.join(Path.home(), ".local", "state")
-    return Path(base) / "lurdens"
+    return paths.state_dir()
 
 
 def _launch_detached(cmd: list[str]) -> bool:

@@ -328,6 +328,7 @@ def main(argv=None) -> int:
         tmp = tempfile.mkdtemp(prefix="lurdens-selftest-")
         os.environ["XDG_CONFIG_HOME"] = os.path.join(tmp, "config")
         os.environ["XDG_STATE_HOME"] = os.path.join(tmp, "state")
+        os.environ["XDG_CACHE_HOME"] = os.path.join(tmp, "cache")
         QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software)
 
     QGuiApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
