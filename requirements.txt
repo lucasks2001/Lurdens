@@ -1,0 +1,4 @@
+# Única dependência de execução. No Fedora, prefira o pacote do sistema:
+#   sudo dnf install python3-pyside6
+# Este arquivo é usado apenas por ./install.sh --venv (ambiente isolado).
+PySide6-Essentials>=6.5

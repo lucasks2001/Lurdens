@@ -1,0 +1,28 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Lurdens
+GenericName=Player para o Spotify
+GenericName[pt_BR]=Player para o Spotify
+Comment=Mostra e controla a música do Spotify em uma janela compacta
+Comment[pt_BR]=Mostra e controla a música do Spotify em uma janela compacta
+Exec=@EXEC@
+TryExec=@EXEC@
+Icon=lurdens
+Terminal=false
+Categories=AudioVideo;Audio;Player;Qt;
+Keywords=spotify;music;música;player;mpris;
+StartupNotify=true
+StartupWMClass=lurdens
+SingleMainWindow=true
+Actions=Show;Minimized;
+
+[Desktop Action Show]
+Name=Mostrar janela
+Name[pt_BR]=Mostrar janela
+Exec=@EXEC@
+
+[Desktop Action Minimized]
+Name=Iniciar na bandeja
+Name[pt_BR]=Iniciar na bandeja
+Exec=@EXEC@ --minimized

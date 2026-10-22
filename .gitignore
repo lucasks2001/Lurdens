@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+*.zip
+.ruff_cache/
+lurdens/resources/easter/
