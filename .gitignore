@@ -4,3 +4,5 @@ __pycache__/
 *.zip
 .ruff_cache/
 lurdens/resources/easter/
+build/
+dist/
