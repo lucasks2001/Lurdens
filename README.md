@@ -3,7 +3,8 @@
 [![CI](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/ci.yml)
 [![Executáveis](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml/badge.svg)](https://github.com/lucasks2001/Lurdens/actions/workflows/release.yml)
 
-Player complementar para o **Spotify Desktop** **Linux (KDE Plasma 6)**, **Windows 10/11** e **macOS**.
+Player complementar para o **Spotify Desktop**
+Para:**Linux (KDE Plasma 6)**, **Windows 10/11** e **macOS**.
 
 | Sistema | Como o Lurdens fala com o Spotify | Como instalar |
 |---|---|---|
