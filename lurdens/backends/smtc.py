@@ -26,7 +26,7 @@ from .polling import PollingBackend
 
 log = logging.getLogger("lurdens.smtc")
 
-WINRT_PACKAGES = ("winrt-runtime winrt-Windows.Foundation winrt-Windows.Media "
+WINRT_PACKAGES = ("winrt-runtime winrt-Windows.Foundation winrt-Windows.Foundation.Collections winrt-Windows.Media "
                   "winrt-Windows.Media.Control winrt-Windows.Storage.Streams")
 
 # GlobalSystemMediaTransportControlsSessionPlaybackStatus

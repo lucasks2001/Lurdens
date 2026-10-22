@@ -7,6 +7,7 @@ PySide6-Essentials>=6.5
 # Windows: acesso aos controles de mídia do sistema (SMTC) pelo PyWinRT.
 winrt-runtime>=2.0; sys_platform == "win32"
 winrt-Windows.Foundation>=2.0; sys_platform == "win32"
+winrt-Windows.Foundation.Collections>=2.0; sys_platform == "win32"
 winrt-Windows.Media>=2.0; sys_platform == "win32"
 winrt-Windows.Media.Control>=2.0; sys_platform == "win32"
 winrt-Windows.Storage.Streams>=2.0; sys_platform == "win32"
