@@ -38,7 +38,9 @@ def create_backend(on_state: StateCallback, *, platform: str | None = None,
     if os_name == "windows":
         from .smtc import SmtcBackend
         return SmtcBackend(on_state)
-    # O backend do macOS entra no próximo passo; até lá, os demais sistemas
-    # usam o MPRIS, que apenas fica "sem barramento" fora do Linux.
+    if os_name == "macos":
+        from .applescript import AppleScriptBackend
+        return AppleScriptBackend(on_state)
+    # Linux e demais sistemas com D-Bus (BSDs etc.).
     from ..mpris import MprisClient
     return MprisClient(on_state, address=address)

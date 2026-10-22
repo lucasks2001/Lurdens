@@ -135,6 +135,14 @@ class BackendTests(unittest.TestCase):
             b.stop()
 
 
+class FactoryTests(unittest.TestCase):
+    def test_factory_picks_applescript_on_macos(self):
+        from lurdens.backends import create_backend
+        b = create_backend(lambda s: None, platform="darwin")
+        self.assertIsInstance(b, AppleScriptBackend)
+        self.assertEqual(b.kind, "applescript")
+
+
 class FinderTests(unittest.TestCase):
     def test_user_applications_folder(self):
         with tempfile.TemporaryDirectory() as d:
