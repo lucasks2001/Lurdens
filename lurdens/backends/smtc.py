@@ -17,7 +17,6 @@ import asyncio
 import hashlib
 import logging
 import os
-import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -45,8 +44,8 @@ def is_spotify_app_id(app_id: str | None) -> bool:
 
 
 def default_art_dir() -> Path:
-    base = os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()
-    return Path(base) / "Lurdens" / "cache" / "art"
+    from .. import paths
+    return paths.cache_dir() / "art"
 
 
 def _us(value) -> int:

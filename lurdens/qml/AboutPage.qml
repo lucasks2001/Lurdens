@@ -58,8 +58,9 @@ Rectangle {
             wrapMode: Text.WordWrap
             color: Theme.inkSoft
             font.pixelSize: 13
-            text: "Player complementar para o Spotify Desktop no KDE Plasma. "
-                  + "Mostra e controla a música atual via MPRIS/D-Bus — sem contas, senhas ou streaming próprio."
+            text: "Player complementar para o Spotify Desktop no Linux, Windows e macOS. "
+                  + "Mostra e controla a música atual via " + player.backendLabel
+                  + " — sem contas, senhas ou streaming próprio."
         }
         Text {
             width: parent.width

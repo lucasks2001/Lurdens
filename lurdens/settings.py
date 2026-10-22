@@ -1,4 +1,4 @@
-"""Configurações persistentes (JSON em ~/.config/lurdens/settings.json)."""
+"""Configurações persistentes (settings.json na pasta de configuração do sistema; veja paths.py)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import json
 import os
 import tempfile
 from pathlib import Path
+
+from . import paths
 
 DEFAULTS: dict = {
     "theme": "dark",              # dark | light | auto
@@ -41,8 +43,7 @@ MIN_SIZE = (320, 160)
 
 
 def config_dir() -> Path:
-    base = os.environ.get("XDG_CONFIG_HOME") or os.path.join(Path.home(), ".config")
-    return Path(base) / "lurdens"
+    return paths.config_dir()
 
 
 def _clean_geometry(raw, default: dict) -> dict:

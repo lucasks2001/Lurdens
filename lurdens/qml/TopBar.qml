@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 // Barra superior compacta: marca, estado da conexão, configurações e menu.
-// Minimizar/maximizar/fechar ficam na barra de título nativa do KWin.
+// Minimizar/maximizar/fechar ficam na barra de título nativa do sistema.
 Rectangle {
     id: bar
     property bool slim: false
@@ -53,7 +53,7 @@ Rectangle {
             MouseArea { id: dotHover; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true }
             ToolTip.visible: dotHover.containsMouse
             ToolTip.delay: 300
-            ToolTip.text: !player.busAvailable ? "D-Bus indisponível"
+            ToolTip.text: !player.busAvailable ? (app.osName === "linux" ? "D-Bus indisponível" : "Controles de mídia indisponíveis")
                           : player.connected ? "Conectado ao " + (player.identity || "Spotify")
                           : "Spotify não está aberto"
         }

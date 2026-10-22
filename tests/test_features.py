@@ -261,16 +261,16 @@ class AutostartTests(unittest.TestCase):
     def test_enable_disable(self):
         with tempfile.TemporaryDirectory() as tdir:
             d = Path(tdir)
-            self.assertFalse(autostart.is_enabled(d))
-            path = autostart.enable(d, command="/home/u/.local/bin/lurdens")
+            self.assertFalse(autostart.is_enabled(d, os_name="linux"))
+            path = autostart.enable(d, command="/home/u/.local/bin/lurdens", os_name="linux")
             text = path.read_text()
             self.assertIn("Exec=/home/u/.local/bin/lurdens --autostart", text)
-            self.assertTrue(autostart.is_enabled(d))
+            self.assertTrue(autostart.is_enabled(d, os_name="linux"))
             path.write_text(text + "Hidden=true\n")       # desativado pelo KDE
-            self.assertFalse(autostart.is_enabled(d))
-            autostart.disable(d)
-            autostart.disable(d)                          # idempotente
-            self.assertFalse(autostart.is_enabled(d))
+            self.assertFalse(autostart.is_enabled(d, os_name="linux"))
+            autostart.disable(d, os_name="linux")
+            autostart.disable(d, os_name="linux")                          # idempotente
+            self.assertFalse(autostart.is_enabled(d, os_name="linux"))
 
 
 class ShortcutCodecTests(unittest.TestCase):
