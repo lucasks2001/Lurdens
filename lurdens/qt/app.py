@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import logging
 import os
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -271,7 +273,13 @@ class Tray(QObject):
 
 # ------------------------------------------------------- instância única
 def _server_name() -> str:
-    return f"{APP_ID}-{os.getuid()}"
+    # Um servidor por usuário. O Windows não tem getuid(): usa o nome do usuário
+    # (o QLocalServer vira um named pipe, que já é isolado por sessão).
+    try:
+        user = str(os.getuid())
+    except AttributeError:
+        user = re.sub(r"[^A-Za-z0-9_.-]", "_", getpass.getuser())
+    return f"{APP_ID}-{user}"
 
 
 def notify_running_instance(message: bytes = b"show") -> bool:
