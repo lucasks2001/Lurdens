@@ -396,6 +396,7 @@ def main(argv=None) -> int:
     if tray_ok:
         tray = Tray(icon, wm, player, appctl, session)
         tray.set_visible(settings.get("trayEnabled"))
+        session.attach_tray(tray.icon)      # notificações no Windows/macOS
 
     def on_tray_setting(on):
         if tray:
