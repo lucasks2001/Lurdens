@@ -1,4 +1,12 @@
-# Única dependência de execução. No Fedora, prefira o pacote do sistema:
-#   sudo dnf install python3-pyside6
-# Este arquivo é usado apenas por ./install.sh --venv (ambiente isolado).
+# Dependências de execução.
+#
+# Linux (Fedora): prefira o pacote do sistema — sudo dnf install python3-pyside6.
+# Este arquivo é usado por ./install.sh --venv, pela CI e pelo empacotamento.
 PySide6-Essentials>=6.5
+
+# Windows: acesso aos controles de mídia do sistema (SMTC) pelo PyWinRT.
+winrt-runtime>=2.0; sys_platform == "win32"
+winrt-Windows.Foundation>=2.0; sys_platform == "win32"
+winrt-Windows.Media>=2.0; sys_platform == "win32"
+winrt-Windows.Media.Control>=2.0; sys_platform == "win32"
+winrt-Windows.Storage.Streams>=2.0; sys_platform == "win32"
