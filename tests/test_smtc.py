@@ -16,6 +16,7 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from lurdens.backends import create_backend  # noqa: E402
 from lurdens.backends.smtc import SmtcBackend, is_spotify_app_id  # noqa: E402
 
 NOW = datetime(2026, 10, 22, 15, 0, 0, tzinfo=timezone.utc)
@@ -112,6 +113,11 @@ class SmtcTests(unittest.TestCase):
         self.assertTrue(is_spotify_app_id("SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"))
         self.assertFalse(is_spotify_app_id("Microsoft.ZuneMusic"))
         self.assertFalse(is_spotify_app_id(None))
+
+    def test_factory_picks_smtc_on_windows(self):
+        b = create_backend(lambda s: None, platform="win32")
+        self.assertIsInstance(b, SmtcBackend)
+        self.assertEqual(b.kind, "smtc")
 
     def test_reads_spotify_session_only(self):
         st = self.backend._read()

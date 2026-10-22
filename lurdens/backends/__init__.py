@@ -34,9 +34,11 @@ def create_backend(on_state: StateCallback, *, platform: str | None = None,
     ``address`` só vale para o MPRIS (endereço de um barramento D-Bus de
     teste); os demais backends o ignoram.
     """
+    os_name = current_os(platform)
+    if os_name == "windows":
+        from .smtc import SmtcBackend
+        return SmtcBackend(on_state)
+    # O backend do macOS entra no próximo passo; até lá, os demais sistemas
+    # usam o MPRIS, que apenas fica "sem barramento" fora do Linux.
     from ..mpris import MprisClient
-    if current_os(platform) == "linux":
-        return MprisClient(on_state, address=address)
-    # Os backends de Windows e macOS entram nos próximos passos; até lá, os
-    # demais sistemas usam o MPRIS, que apenas fica "sem barramento".
     return MprisClient(on_state, address=address)
