@@ -1,10 +1,13 @@
 name: Executáveis
 
 # Gera o Lurdens empacotado para Windows e macOS.
-# - Em tags v* (ex.: v1.3.0): anexa os .zip à release da tag (criada como
+# - Windows: instalador Lurdens-Setup-<versão>-windows-x64.exe (Inno Setup) e,
+#   como alternativa portátil, o .zip com a pasta do programa.
+# - macOS: .zip com o Lurdens.app.
+# - Em tags v* (ex.: v1.3.1): anexa os arquivos à release da tag (criada como
 #   rascunho se ainda não existir).
 # - Em PRs que mexem no empacotamento e pelo botão "Run workflow": só gera e
-#   guarda os .zip como artefatos da execução, para teste.
+#   guarda os arquivos como artefatos da execução, para teste.
 on:
   push:
     tags: ["v*"]
@@ -62,6 +65,56 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "autoteste do executável falhou ($($p.ExitCode))" }
           Compress-Archive -Path dist\Lurdens -DestinationPath "Lurdens-${{ steps.version.outputs.version }}-${{ matrix.suffix }}.zip"
 
+      - name: Instalador .exe (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "falha ao instalar o Inno Setup" }
+          }
+          $root = $env:GITHUB_WORKSPACE
+          python -c "from PIL import Image; Image.open(r'$root\lurdens\resources\icons\lurdens-256.png').save(r'$root\dist\lurdens.ico', sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])"
+          & $iscc /Q "/DAppVersion=${{ steps.version.outputs.version }}" "/DSourceDir=$root\dist\Lurdens" `
+                     "/DOutputDir=$root" "/DIconFile=$root\dist\lurdens.ico" packaging\lurdens.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC falhou ($LASTEXITCODE)" }
+          Get-ChildItem Lurdens-Setup-*.exe | Format-Table Name, Length
+
+      - name: Testar o instalador (instalar, abrir, desinstalar)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem Lurdens-Setup-*.exe).FullName
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "instalação falhou ($($p.ExitCode))" }
+
+          $dir = "$env:LOCALAPPDATA\Programs\Lurdens"
+          $exe = "$dir\Lurdens.exe"
+          $lnk = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Lurdens.lnk"
+          if (-not (Test-Path $exe)) { throw "Lurdens.exe não foi instalado em $dir" }
+          if (-not (Test-Path $lnk)) { throw "atalho do Menu Iniciar não foi criado" }
+          $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{6B2E8C41-3F7A-4D59-9A0E-5C1D7B3F2A86}_is1'
+          if (-not (Test-Path $key)) { throw "o Lurdens não aparece em Aplicativos instalados" }
+          Write-Host "instalado: $exe"
+
+          $p = Start-Process $exe -ArgumentList '--selftest', "$env:RUNNER_TEMP\instalado" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "autoteste do Lurdens instalado falhou ($($p.ExitCode))" }
+
+          # simula "Iniciar com o Windows" ligado, para conferir que o desinstalador limpa
+          New-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name Lurdens `
+            -Value "`"$exe`" --autostart" -PropertyType String -Force | Out-Null
+
+          $p = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "desinstalação falhou ($($p.ExitCode))" }
+          # o desinstalador termina numa cópia temporária: espera os arquivos sumirem
+          for ($i = 0; $i -lt 60 -and (Test-Path $exe); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path $exe) { throw "Lurdens.exe continua lá depois de desinstalar" }
+          if (Test-Path $lnk) { throw "atalho continua lá depois de desinstalar" }
+          $run = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name Lurdens -ErrorAction SilentlyContinue
+          if ($run) { throw "a entrada de inicialização automática não foi removida" }
+          Write-Host "instalar → abrir → desinstalar: ok"
+
       - name: Autoteste do executável e .zip (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -72,7 +125,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Lurdens-${{ steps.version.outputs.version }}-${{ matrix.suffix }}
-          path: Lurdens-*.zip
+          path: |
+            Lurdens-*.zip
+            Lurdens-Setup-*.exe
           if-no-files-found: error
           retention-days: 14
 
@@ -97,4 +152,4 @@ jobs:
         run: |
           gh release view "$TAG" >/dev/null 2>&1 \
             || gh release create "$TAG" --draft --verify-tag --title "Lurdens ${TAG#v}" --notes "Rascunho: escreva as notas da versão."
-          gh release upload "$TAG" dist/*.zip --clobber
+          gh release upload "$TAG" dist/*.zip dist/*.exe --clobber
