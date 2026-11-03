@@ -2,6 +2,17 @@
 
 CHANGELOG = [
     {
+        "version": "1.3.1",
+        "date": "02/11/2026",
+        "changes": [
+            "Novo: instalador para Windows (Lurdens-Setup.exe): instala em poucos cliques, sem pedir administrador.",
+            "Novo: atalho no Menu Iniciar (e na área de trabalho, se quiser) e o Lurdens aparece em Configurações › Aplicativos.",
+            "Novo: atualizar é só rodar o instalador da versão nova por cima; as configurações continuam.",
+            "Novo: o desinstalador encerra o Lurdens, remove o “Iniciar com o Windows” e pergunta se apaga também configurações e histórico.",
+            "O .zip portátil continua disponível para quem prefere não instalar.",
+        ],
+    },
+    {
         "version": "1.3.0",
         "date": "22/10/2026",
         "changes": [

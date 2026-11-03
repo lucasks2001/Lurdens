@@ -87,13 +87,29 @@ pelas versões antigas.
 
 ## Windows e macOS
 
-### Instalar
+### Instalar no Windows
 
-1. Baixe o `.zip` do seu sistema na página
+1. Na página [Releases](https://github.com/lucasks2001/Lurdens/releases),
+   baixe **`Lurdens-Setup-<versão>-windows-x64.exe`**.
+2. Abra o arquivo e clique em **Instalar**. Não pede senha de administrador:
+   o Lurdens vai para `%LOCALAPPDATA%\Programs\Lurdens`, ganha um atalho no
+   Menu Iniciar (e na área de trabalho, se você marcar) e abre no final.
+3. Abra o Spotify Desktop e toque uma música.
+
+- **Atualizar**: baixe o instalador da versão nova e rode por cima. Se o
+  Lurdens estiver aberto (mesmo só na bandeja), o instalador o fecha.
+  Configurações, histórico e tempo de uso continuam.
+- **Desinstalar**: Configurações do Windows › Aplicativos › Aplicativos
+  instalados › Lurdens › Desinstalar. Ele encerra o Lurdens, tira a entrada de
+  “Iniciar com o Windows” e pergunta se também apaga as configurações.
+- **Sem instalar**: o `Lurdens-<versão>-windows-x64.zip` traz a mesma pasta;
+  extraia onde quiser e abra `Lurdens.exe`.
+
+### Instalar no macOS
+
+1. Baixe `Lurdens-<versão>-macos-arm64.zip` em
    [Releases](https://github.com/lucasks2001/Lurdens/releases).
-2. **Windows**: extraia a pasta `Lurdens` onde preferir (ex.: `Documentos`) e
-   abra `Lurdens.exe`. **macOS**: extraia e arraste `Lurdens.app` para
-   **Aplicativos**.
+2. Extraia e arraste `Lurdens.app` para **Aplicativos**.
 3. Abra o Spotify Desktop e toque uma música.
 
 Os executáveis ainda não têm assinatura digital. Na primeira abertura:

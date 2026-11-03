@@ -3,6 +3,14 @@
 O mesmo conteúdo aparece no app em **Novidades** (clique no selo de versão na barra superior).
 Fonte: `lurdens/changelog.py`.
 
+## 1.3.1 — 02/11/2026
+- Novo: instalador para Windows `Lurdens-Setup-<versão>-windows-x64.exe` (Inno Setup), só para o usuário atual, sem pedir administrador.
+- Novo: atalho no Menu Iniciar (área de trabalho opcional) e entrada em Configurações › Aplicativos.
+- Novo: atualização por cima da versão anterior, mantendo as configurações.
+- Novo: desinstalador encerra o Lurdens, remove a entrada de “Iniciar com o Windows” e pergunta se apaga configurações, histórico e cache.
+- Novo: a CI instala, abre (autoteste) e desinstala o instalador numa máquina Windows a cada build.
+- O `.zip` portátil continua nas releases.
+
 ## 1.3.0 — 22/10/2026
 - Novo: suporte ao **Windows 10/11** pelos controles de mídia do sistema (SMTC, via PyWinRT).
 - Novo: suporte ao **macOS** pelo dicionário AppleScript do Spotify (osascript).
