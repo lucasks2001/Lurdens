@@ -102,7 +102,9 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "autoteste do Lurdens instalado falhou ($($p.ExitCode))" }
 
           # simula "Iniciar com o Windows" ligado, para conferir que o desinstalador limpa
-          New-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name Lurdens `
+          $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+          if (-not (Test-Path $runKey)) { New-Item -Path $runKey -Force | Out-Null }
+          New-ItemProperty -Path $runKey -Name Lurdens `
             -Value "`"$exe`" --autostart" -PropertyType String -Force | Out-Null
 
           $p = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
